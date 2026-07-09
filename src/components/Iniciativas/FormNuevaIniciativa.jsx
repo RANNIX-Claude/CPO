@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useApp } from '../../context/AppContext.jsx';
+import { DEMO_PERSONA_ID } from '../../lib/constants.js';
 import AnalisisCausaRaiz from './AnalisisCausaRaiz.jsx';
 
 const MIN_PROBLEMA = 40;
@@ -11,6 +12,7 @@ const MAX_ARCHIVO_BYTES = 15 * 1024 * 1024;
 
 export default function FormNuevaIniciativa() {
   const { persona } = useAuth();
+  const solicitanteId = persona?.id ?? DEMO_PERSONA_ID; // sin sesión: se atribuye a la persona demo
   const { empresas } = useApp();
   const navigate = useNavigate();
   const [paso, setPaso] = useState(1);
@@ -72,7 +74,7 @@ export default function FormNuevaIniciativa() {
       folio,
       empresa_id: form.empresa_id,
       area_solicitante_id: form.area_solicitante_id,
-      solicitante_id: persona.id,
+      solicitante_id: solicitanteId,
       titulo: form.titulo,
       descripcion: form.problema_actual,
       problema_actual: form.problema_actual,
@@ -99,12 +101,12 @@ export default function FormNuevaIniciativa() {
         url: signed?.signedUrl ?? path,
         tipo_mime: file.type,
         tamano_bytes: file.size,
-        subido_por_id: persona.id,
+        subido_por_id: solicitanteId,
       });
     }
 
     setEnviando(false);
-    navigate('/mis-solicitudes');
+    navigate(persona ? '/mis-solicitudes' : `/ficha/${nueva.id}`);
   };
 
   return (

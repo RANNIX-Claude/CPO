@@ -16,12 +16,13 @@ import Catalogos from './pages/Admin/Catalogos.jsx';
 import SolicitudesAcceso from './pages/Admin/SolicitudesAcceso.jsx';
 
 export default function App() {
-  const { loading, user, persona, hasRole } = useAuth();
+  const { loading, user, hasRole } = useAuth();
 
   if (loading) return <div style={{ padding: 40 }}>Cargando…</div>;
 
-  // MODO DEMO: no se exige login para ver la app (solo lectura, ver supabase/demo_open_read.sql).
-  // Para restaurar el acceso completo: correr supabase/demo_close_read.sql y quitar este comentario.
+  // MODO DEMO: no se exige login para ver la app ni para crear "Nueva solicitud"
+  // (ver supabase/demo_open_read.sql y demo_enable_write.sql).
+  // Para restaurar el acceso completo: correr demo_close_read.sql + demo_close_write.sql.
 
   return (
     <Routes>
@@ -35,10 +36,7 @@ export default function App() {
         />
         <Route path="/bandeja" element={<Bandeja />} />
         <Route path="/ficha/:id" element={<Ficha />} />
-        <Route
-          path="/nueva-solicitud"
-          element={persona ? <NuevaSolicitud /> : <Navigate to="/login" />}
-        />
+        <Route path="/nueva-solicitud" element={<NuevaSolicitud />} />
         <Route
           path="/mis-solicitudes"
           element={hasRole('solicitante', 'ejecutivo_area') ? <MisSolicitudes /> : <Navigate to="/dashboard" />}

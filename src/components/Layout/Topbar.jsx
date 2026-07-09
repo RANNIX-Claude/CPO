@@ -7,7 +7,7 @@ export default function Topbar() {
   return (
     <header className="topbar">
       <div style={{ fontSize: 14, color: 'var(--ink3)' }}>
-        {user ? roles.map((r) => ROL_LABELS[r] ?? r).join(' · ') : 'Modo demo — solo lectura, sin login'}
+        {user ? roles.map((r) => ROL_LABELS[r] ?? r).join(' · ') : 'Modo demo — sin login, puedes ver todo y crear nuevas solicitudes'}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {user ? (

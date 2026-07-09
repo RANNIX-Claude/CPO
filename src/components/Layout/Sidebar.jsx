@@ -6,7 +6,7 @@ const LINKS = [
   { to: '/dashboard-dg', label: 'Dashboard DG', roles: ['director_area', 'cpo', 'admin'] },
   { to: '/bandeja', label: 'Bandeja', roles: null },
   { to: '/mis-solicitudes', label: 'Mis solicitudes', roles: ['solicitante', 'ejecutivo_area'] },
-  { to: '/nueva-solicitud', label: 'Nueva solicitud', roles: null, requierePersona: true },
+  { to: '/nueva-solicitud', label: 'Nueva solicitud', roles: null },
   { to: '/admin/empresas', label: 'Admin · Empresas', roles: ['admin', 'cpo'] },
   { to: '/admin/areas', label: 'Admin · Áreas', roles: ['admin', 'cpo'] },
   { to: '/admin/personas', label: 'Admin · Personas', roles: ['admin', 'cpo'] },
@@ -15,11 +15,11 @@ const LINKS = [
 ];
 
 export default function Sidebar() {
-  const { hasRole, persona } = useAuth();
+  const { hasRole } = useAuth();
   return (
     <nav className="sidebar">
       <div style={{ fontWeight: 700, marginBottom: 24, fontSize: 15 }}>CPO Portfolio</div>
-      {LINKS.filter((l) => (!l.roles || hasRole(...l.roles)) && (!l.requierePersona || persona)).map((l) => (
+      {LINKS.filter((l) => !l.roles || hasRole(...l.roles)).map((l) => (
         <NavLink
           key={l.to}
           to={l.to}

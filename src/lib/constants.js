@@ -1,3 +1,7 @@
+// Persona fija para "Nueva solicitud" en modo demo (sin login).
+// Ver supabase/demo_enable_write.sql / demo_close_write.sql.
+export const DEMO_PERSONA_ID = '00000000-0000-0000-0000-0000000000d0';
+
 export const STATUS_CONFIG = {
   recibida:          { color: '#888888', label: 'Recibida',           icon: '○' },
   en_revision:       { color: '#3b82f6', label: 'En revisión',        icon: '◎' },
