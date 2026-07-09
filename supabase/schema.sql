@@ -466,6 +466,10 @@ INSERT INTO iniciativas (folio, empresa_id, area_solicitante_id, solicitante_id,
 ('FIN-2026-0005', (SELECT id FROM empresas WHERE prefijo_folio='FIN'), (SELECT id FROM areas WHERE nombre='Operaciones' AND empresa_id=(SELECT id FROM empresas WHERE prefijo_folio='FIN')), (SELECT id FROM personas WHERE email='tomas.vega@fin.com'), (SELECT id FROM personas WHERE email='laura.gomez@fin.com'), 'Disputas y contracargos automatizados', 'Gestión de contracargos 100% manual', 'Tiempo de resolución promedio de 10 días', 'Flujo automatizado de disputas', (SELECT id FROM tipo_solicitud WHERE nombre='Optimización de proceso'), 'media', NULL, false, NULL, (SELECT id FROM personas WHERE email='luis.fernandez@grupocpo.com'), 'en_desarrollo'),
 ('FIN-2026-0006', (SELECT id FROM empresas WHERE prefijo_folio='FIN'), (SELECT id FROM areas WHERE nombre='Finanzas' AND empresa_id=(SELECT id FROM empresas WHERE prefijo_folio='FIN')), (SELECT id FROM personas WHERE email='tomas.vega@fin.com'), (SELECT id FROM personas WHERE email='laura.gomez@fin.com'), 'Reporte de comisiones para comercios', 'Comercios no tienen visibilidad de comisiones cobradas', 'Alto volumen de tickets de soporte por dudas de cobro', 'Reporte descargable mensual por comercio', (SELECT id FROM tipo_solicitud WHERE nombre='Optimización de proceso'), 'baja', NULL, false, NULL, (SELECT id FROM personas WHERE email='luis.fernandez@grupocpo.com'), 'en_produccion');
 
+-- Nota: el trigger de protección de columnas usa auth.uid(), que es NULL en esta sesión
+-- (conexión directa como postgres, sin JWT de sesión) -- se desactiva solo para el seed.
+ALTER TABLE iniciativas DISABLE TRIGGER trg_proteger_columnas;
+
 -- Completar campos de Gestión Tecnología en las iniciativas que ya están en etapa proyecto
 UPDATE iniciativas SET responsable_ti_id=(SELECT id FROM personas WHERE email='diana.salas@grupocpo.com'), ejecutivo_ti_id=(SELECT id FROM personas WHERE email='jorge.nunez@grupocpo.com'), estimacion_horas=120, porcentaje_avance=0, fecha_compromiso=CURRENT_DATE + INTERVAL '30 days' WHERE folio='SEG-2026-0005';
 UPDATE iniciativas SET responsable_ti_id=(SELECT id FROM personas WHERE email='diana.salas@grupocpo.com'), ejecutivo_ti_id=(SELECT id FROM personas WHERE email='jorge.nunez@grupocpo.com'), estimacion_horas=200, porcentaje_avance=40, fecha_inicio_real=CURRENT_DATE - INTERVAL '15 days', fecha_compromiso=CURRENT_DATE + INTERVAL '20 days' WHERE folio='SEG-2026-0006';
@@ -483,3 +487,5 @@ UPDATE iniciativas SET motivo_estatus='Presupuesto reasignado a otra prioridad d
 INSERT INTO comentarios (iniciativa_id, autor_id, texto, es_interno) VALUES
   ((SELECT id FROM iniciativas WHERE folio='SEG-2026-0006'), (SELECT id FROM personas WHERE email='jorge.nunez@grupocpo.com'), 'Avance del sprint 2 completado, iniciando integración con cámara del dispositivo.', true),
   ((SELECT id FROM iniciativas WHERE folio='SEG-2026-0006'), (SELECT id FROM personas WHERE email='luis.fernandez@grupocpo.com'), 'Vamos en tiempo para la fecha compromiso.', false);
+
+ALTER TABLE iniciativas ENABLE TRIGGER trg_proteger_columnas;
