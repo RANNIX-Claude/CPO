@@ -5,6 +5,7 @@ const LINKS = [
   { to: '/dashboard', label: 'Dashboard', roles: null },
   { to: '/dashboard-dg', label: 'Dashboard DG', roles: ['director_area', 'cpo', 'admin'] },
   { to: '/bandeja', label: 'Bandeja', roles: null },
+  { to: '/informes', label: 'Informes Ejecutivos', roles: null },
   { to: '/mis-solicitudes', label: 'Mis solicitudes', roles: ['solicitante', 'ejecutivo_area'] },
   { to: '/nueva-solicitud', label: 'Nueva solicitud', roles: null },
   { to: '/admin/empresas', label: 'Admin · Empresas', roles: ['admin', 'cpo'] },

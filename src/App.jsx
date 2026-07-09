@@ -6,6 +6,7 @@ import SolicitudAcceso from './pages/SolicitudAcceso.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Dashboard_DG from './pages/Dashboard_DG.jsx';
 import Bandeja from './pages/Bandeja.jsx';
+import Informes from './pages/Informes.jsx';
 import Ficha from './pages/Ficha.jsx';
 import NuevaSolicitud from './pages/NuevaSolicitud.jsx';
 import MisSolicitudes from './pages/MisSolicitudes.jsx';
@@ -35,6 +36,7 @@ export default function App() {
           element={hasRole('director_area', 'cpo', 'admin') ? <Dashboard_DG /> : <Navigate to="/dashboard" />}
         />
         <Route path="/bandeja" element={<Bandeja />} />
+        <Route path="/informes" element={<Informes />} />
         <Route path="/ficha/:id" element={<Ficha />} />
         <Route path="/nueva-solicitud" element={<NuevaSolicitud />} />
         <Route
