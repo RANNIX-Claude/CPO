@@ -19,23 +19,26 @@ export default function App() {
   const { loading, user, persona, hasRole } = useAuth();
 
   if (loading) return <div style={{ padding: 40 }}>Cargando…</div>;
-  if (!user) return <Login />;
-  if (!persona) return <SolicitudAcceso />;
+
+  // MODO DEMO: no se exige login para ver la app (solo lectura, ver supabase/demo_open_read.sql).
+  // Para restaurar el acceso completo: correr supabase/demo_close_read.sql y quitar este comentario.
 
   return (
     <Routes>
+      <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+      {!user && <Route path="/solicitud-acceso" element={<SolicitudAcceso />} />}
       <Route element={<Shell />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route
           path="/dashboard-dg"
           element={hasRole('director_area', 'cpo', 'admin') ? <Dashboard_DG /> : <Navigate to="/dashboard" />}
         />
-        <Route
-          path="/bandeja"
-          element={hasRole('admin', 'cpo', 'producto', 'cto', 'ti') ? <Bandeja /> : <Navigate to="/dashboard" />}
-        />
+        <Route path="/bandeja" element={<Bandeja />} />
         <Route path="/ficha/:id" element={<Ficha />} />
-        <Route path="/nueva-solicitud" element={<NuevaSolicitud />} />
+        <Route
+          path="/nueva-solicitud"
+          element={persona ? <NuevaSolicitud /> : <Navigate to="/login" />}
+        />
         <Route
           path="/mis-solicitudes"
           element={hasRole('solicitante', 'ejecutivo_area') ? <MisSolicitudes /> : <Navigate to="/dashboard" />}

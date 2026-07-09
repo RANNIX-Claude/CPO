@@ -139,9 +139,11 @@ export default function FichaIniciativa({ iniciativaId }) {
             onChange={(e) => guardarCampo('prioridad_producto', Number(e.target.value))}
           />
         </label>
-        <div style={{ marginTop: 12 }}>
-          <PrototipoIA iniciativa={iniciativa} />
-        </div>
+        {persona && (
+          <div style={{ marginTop: 12 }}>
+            <PrototipoIA iniciativa={iniciativa} />
+          </div>
+        )}
       </section>
 
       {seccionTiVisible && (
@@ -179,13 +181,19 @@ export default function FichaIniciativa({ iniciativaId }) {
             <div>{c.texto}</div>
           </div>
         ))}
-        <textarea style={{ width: '100%', minHeight: 50 }} value={nuevoComentario} onChange={(e) => setNuevoComentario(e.target.value)} placeholder="Escribe un comentario…" />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-          <label style={{ fontSize: 13 }}>
-            <input type="checkbox" checked={comentarioInterno} onChange={(e) => setComentarioInterno(e.target.checked)} /> Interno
-          </label>
-          <button className="btn btn-primary" onClick={enviarComentario}>Agregar comentario</button>
-        </div>
+        {persona ? (
+          <>
+            <textarea style={{ width: '100%', minHeight: 50 }} value={nuevoComentario} onChange={(e) => setNuevoComentario(e.target.value)} placeholder="Escribe un comentario…" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+              <label style={{ fontSize: 13 }}>
+                <input type="checkbox" checked={comentarioInterno} onChange={(e) => setComentarioInterno(e.target.checked)} /> Interno
+              </label>
+              <button className="btn btn-primary" onClick={enviarComentario}>Agregar comentario</button>
+            </div>
+          </>
+        ) : (
+          <p style={{ fontSize: 13, color: 'var(--ink3)' }}>Inicia sesión para comentar.</p>
+        )}
       </section>
 
       <section className="card">
@@ -193,12 +201,14 @@ export default function FichaIniciativa({ iniciativaId }) {
         {archivos.map((a) => (
           <div key={a.id}><a href={a.url} target="_blank" rel="noreferrer">{a.nombre}</a></div>
         ))}
-        <input type="file" onChange={subirArchivo} style={{ marginTop: 8 }} />
+        {persona && <input type="file" onChange={subirArchivo} style={{ marginTop: 8 }} />}
       </section>
 
-      <div style={{ position: 'sticky', bottom: 16, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <CambiarEstatus iniciativa={iniciativa} onChanged={cargar} />
-      </div>
+      {persona && (
+        <div style={{ position: 'sticky', bottom: 16, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <CambiarEstatus iniciativa={iniciativa} onChanged={cargar} />
+        </div>
+      )}
     </div>
   );
 }
