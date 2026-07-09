@@ -1,12 +1,14 @@
 import { useState } from 'react';
 
 const PREGUNTA_INICIAL = '¿Por qué está ocurriendo este problema?';
+const MIN_RESPUESTA = 8;
 
 export default function AnalisisCausaRaiz({ value = [], onChange }) {
   const [actual, setActual] = useState('');
+  const respuestaValida = actual.trim().length >= MIN_RESPUESTA;
 
   const agregar = () => {
-    if (!actual.trim()) return;
+    if (!respuestaValida) return;
     const pregunta = value.length === 0
       ? PREGUNTA_INICIAL
       : `¿Por qué ocurre eso? (a raíz de: "${value[value.length - 1].respuesta}")`;
@@ -39,7 +41,12 @@ export default function AnalisisCausaRaiz({ value = [], onChange }) {
             onChange={(e) => setActual(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), agregar())}
           />
-          <button type="button" className="btn" onClick={agregar}>Agregar</button>
+          <button type="button" className="btn" onClick={agregar} disabled={!respuestaValida}>Agregar</button>
+        </div>
+      )}
+      {actual.length > 0 && !respuestaValida && (
+        <div style={{ color: 'var(--ink3)', fontSize: 12, marginTop: 4 }}>
+          Respuesta muy corta — describe la causa, no solo "sí"/"no" ({actual.trim().length}/{MIN_RESPUESTA}).
         </div>
       )}
       {value.length > 0 && (

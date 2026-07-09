@@ -5,6 +5,10 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import AnalisisCausaRaiz from './AnalisisCausaRaiz.jsx';
 
+const MIN_PROBLEMA = 40;
+const MIN_SOLUCION = 20;
+const MAX_ARCHIVO_BYTES = 15 * 1024 * 1024;
+
 export default function FormNuevaIniciativa() {
   const { persona } = useAuth();
   const { empresas } = useApp();
@@ -13,6 +17,7 @@ export default function FormNuevaIniciativa() {
   const [areas, setAreas] = useState([]);
   const [tipos, setTipos] = useState([]);
   const [enviando, setEnviando] = useState(false);
+  const [archivos, setArchivos] = useState([]);
 
   const [form, setForm] = useState({
     empresa_id: persona?.empresa_id ?? '',
@@ -40,14 +45,30 @@ export default function FormNuevaIniciativa() {
   }, []);
 
   const set = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.target.value }));
+
   const causaRaizCompleta = form.analisis_causa_raiz.length >= 2;
+  const problemaCompleto = form.problema_actual.trim().length >= MIN_PROBLEMA;
+  const solucionCompleta = form.solucion_esperada.trim().length >= MIN_SOLUCION;
+  const paso2Completo = form.titulo.trim().length > 0 && problemaCompleto && causaRaizCompleta && solucionCompleta;
+
+  const agregarArchivos = (e) => {
+    const nuevos = Array.from(e.target.files ?? []);
+    const rechazados = nuevos.filter((f) => f.size > MAX_ARCHIVO_BYTES);
+    if (rechazados.length > 0) {
+      alert(`${rechazados.map((f) => f.name).join(', ')} supera 15 MB y no se agregó.`);
+    }
+    setArchivos((prev) => [...prev, ...nuevos.filter((f) => f.size <= MAX_ARCHIVO_BYTES)]);
+    e.target.value = '';
+  };
+
+  const quitarArchivo = (i) => setArchivos((prev) => prev.filter((_, idx) => idx !== i));
 
   const enviar = async () => {
     setEnviando(true);
     const { data: folio, error: folioError } = await supabase.rpc('generar_folio', { p_empresa_id: form.empresa_id });
     if (folioError) { alert(folioError.message); setEnviando(false); return; }
 
-    const { error } = await supabase.from('iniciativas').insert({
+    const { data: nueva, error } = await supabase.from('iniciativas').insert({
       folio,
       empresa_id: form.empresa_id,
       area_solicitante_id: form.area_solicitante_id,
@@ -63,9 +84,26 @@ export default function FormNuevaIniciativa() {
       fecha_requerida: form.fecha_requerida || null,
       es_regulatorio: form.es_regulatorio,
       autoridad_regulatoria: form.autoridad_regulatoria || null,
-    });
+    }).select().single();
+
+    if (error) { alert(error.message); setEnviando(false); return; }
+
+    for (const file of archivos) {
+      const path = `${form.empresa_id}/${nueva.id}/${crypto.randomUUID()}-${file.name}`;
+      const { error: upErr } = await supabase.storage.from('adjuntos-iniciativas').upload(path, file);
+      if (upErr) { alert(`No se pudo subir ${file.name}: ${upErr.message}`); continue; }
+      const { data: signed } = await supabase.storage.from('adjuntos-iniciativas').createSignedUrl(path, 60 * 60 * 24 * 7);
+      await supabase.from('archivos_adjuntos').insert({
+        iniciativa_id: nueva.id,
+        nombre: file.name,
+        url: signed?.signedUrl ?? path,
+        tipo_mime: file.type,
+        tamano_bytes: file.size,
+        subido_por_id: persona.id,
+      });
+    }
+
     setEnviando(false);
-    if (error) { alert(error.message); return; }
     navigate('/mis-solicitudes');
   };
 
@@ -96,7 +134,15 @@ export default function FormNuevaIniciativa() {
             <input value={form.titulo} onChange={set('titulo')} style={{ width: '100%' }} />
           </label>
           <label>¿Cuál es el problema? (síntoma inicial)
-            <textarea value={form.problema_actual} onChange={set('problema_actual')} style={{ width: '100%', minHeight: 60 }} />
+            <textarea
+              value={form.problema_actual}
+              onChange={set('problema_actual')}
+              style={{ width: '100%', minHeight: 70 }}
+              placeholder="Qué pasa, quién lo reporta, con qué frecuencia, desde cuándo, qué impacto tiene hoy…"
+            />
+            <div style={{ fontSize: 12, color: problemaCompleto ? 'var(--ink3)' : 'var(--amber)', marginTop: 2 }}>
+              {form.problema_actual.trim().length}/{MIN_PROBLEMA} caracteres mínimos
+            </div>
           </label>
           <AnalisisCausaRaiz
             value={form.analisis_causa_raiz}
@@ -108,8 +154,13 @@ export default function FormNuevaIniciativa() {
               onChange={set('solucion_esperada')}
               style={{ width: '100%', minHeight: 60 }}
               disabled={!causaRaizCompleta}
-              placeholder={causaRaizCompleta ? '' : 'Completa el análisis de causa raíz primero'}
+              placeholder={causaRaizCompleta ? 'Qué resultado esperas obtener, no cómo construirlo' : 'Completa el análisis de causa raíz primero'}
             />
+            {causaRaizCompleta && (
+              <div style={{ fontSize: 12, color: solucionCompleta ? 'var(--ink3)' : 'var(--amber)', marginTop: 2 }}>
+                {form.solucion_esperada.trim().length}/{MIN_SOLUCION} caracteres mínimos
+              </div>
+            )}
           </label>
         </div>
       )}
@@ -151,6 +202,20 @@ export default function FormNuevaIniciativa() {
               </label>
             </>
           )}
+
+          <label>Documentación de soporte (opcional, máx. 15 MB por archivo)
+            <input type="file" multiple onChange={agregarArchivos} style={{ display: 'block', marginTop: 4 }} />
+          </label>
+          {archivos.length > 0 && (
+            <div>
+              {archivos.map((f, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, padding: '4px 0' }}>
+                  <span>{f.name} <span style={{ color: 'var(--ink3)' }}>({(f.size / 1024).toFixed(0)} KB)</span></span>
+                  <button type="button" className="btn" onClick={() => quitarArchivo(i)}>Quitar</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -159,8 +224,20 @@ export default function FormNuevaIniciativa() {
           <h4>Revisión</h4>
           <p><strong>{form.titulo}</strong></p>
           <p style={{ color: 'var(--ink3)' }}>{form.problema_actual}</p>
+          <details style={{ marginBottom: 10 }}>
+            <summary style={{ cursor: 'pointer', color: 'var(--blue)' }}>
+              Análisis de causa raíz ({form.analisis_causa_raiz.length} pasos)
+            </summary>
+            {form.analisis_causa_raiz.map((item, i) => (
+              <div key={i} style={{ marginTop: 6 }}>
+                <div style={{ fontSize: 12, color: 'var(--ink3)' }}>{item.pregunta}</div>
+                <div>{item.respuesta}</div>
+              </div>
+            ))}
+          </details>
           <p><strong>Solución esperada:</strong> {form.solucion_esperada}</p>
           <p><strong>Urgencia:</strong> {form.urgencia} {form.es_regulatorio && `· Regulatorio (${form.autoridad_regulatoria})`}</p>
+          <p><strong>Documentación adjunta:</strong> {archivos.length === 0 ? 'Ninguna' : archivos.map((f) => f.name).join(', ')}</p>
         </div>
       )}
 
@@ -170,7 +247,7 @@ export default function FormNuevaIniciativa() {
           <button
             className="btn btn-primary"
             onClick={() => setPaso(paso + 1)}
-            disabled={paso === 2 && !causaRaizCompleta}
+            disabled={paso === 2 && !paso2Completo}
           >
             Siguiente
           </button>
