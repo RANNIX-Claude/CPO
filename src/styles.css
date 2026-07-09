@@ -1,0 +1,132 @@
+:root {
+  --bg: #ffffff;
+  --bg2: #f7f7f5;
+  --border: #e8e8e4;
+  --ink: #0a0a08;
+  --ink2: #3d3d38;
+  --ink3: #888880;
+  --blue: #0066ff;
+  --green: #00a868;
+  --amber: #e07800;
+  --red: #d42b2b;
+  --purple: #6e3fce;
+
+  --radius-card: 12px;
+  --radius-input: 8px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .06);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg2);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: 'DM Mono', monospace;
+}
+
+a { color: inherit; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  border-radius: var(--radius-input);
+  border: 0.5px solid var(--border);
+  padding: 8px 10px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.card {
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.btn {
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-input);
+  background: var(--bg);
+  padding: 8px 14px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--bg);
+  border-right: 0.5px solid var(--border);
+  padding: 16px;
+}
+
+.topbar {
+  border-bottom: 0.5px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+}
+
+.main-content {
+  padding: 24px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+th {
+  color: var(--ink3);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
